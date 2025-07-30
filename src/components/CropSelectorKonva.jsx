@@ -64,22 +64,18 @@ const Toolbar = ({ activateUltron }) => {
   );
 };
 
-export default function CropSelectorKonva({ fullCanvas, onCropSelected, selectedPage, canvasScale, stagePosRef }) {
+export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScale, stagePosRef, shapesRef, trasnformerRef }) {
 
   console.log("canvas page rendered")
   const [image, setImage] = useState(null);
   const isDragging = useRef(false);
 
-  const zoom = useRef(1.0);
   const pointer = useRef({ x: 0, y: 0 });
   const drawlayerRef = useRef();
   const stageRef = useRef();
-  const shapesRef = useRef([])
-  const trasnformerRef = useRef(null);
 
   // Load fullCanvas into image
   useEffect(() => {
-
     const img = new window.Image();
     img.src = fullCanvas.toDataURL();
     img.onload = () => setImage(img);
@@ -87,9 +83,12 @@ export default function CropSelectorKonva({ fullCanvas, onCropSelected, selected
       stageRef.current.draggable(true);
       stageRef.current.position(stagePosRef.current)
       const layer = drawlayerRef.current;
-      const transformer = new Konva.Transformer();
-      trasnformerRef.current = transformer;
-      layer.add(transformer);
+      if (!trasnformerRef?.current) {
+        console.log("init transforemer")
+        const transformer = new Konva.Transformer();
+        trasnformerRef.current = transformer;
+      }
+      layer.add(trasnformerRef.current);
       stageRef.current.batchDraw();
     }
   }, [fullCanvas]);
@@ -138,9 +137,6 @@ export default function CropSelectorKonva({ fullCanvas, onCropSelected, selected
     stage.position(newPos);
     stage.batchDraw();
   };
-
-  const canvasWidth = fullCanvas?.width;
-  const canvasHeight = fullCanvas?.height;
 
   const activateUltron = (shape) => {
     console.log(shape)
@@ -195,6 +191,9 @@ export default function CropSelectorKonva({ fullCanvas, onCropSelected, selected
     const pos = stageRef.current.position();
     stagePosRef.current = pos;
   };
+
+  const canvasWidth = fullCanvas?.width;
+  const canvasHeight = fullCanvas?.height;
 
   return (
     <div className="relative border overflow-hidden w-[100%] h-[100%]"

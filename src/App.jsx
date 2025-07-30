@@ -8,7 +8,8 @@ function App() {
   const [selectedPage, setSelectedPage] = useState(null);
   const canvasScale = useRef({ x: 1, y: 1 })
   const stagePosRef = useRef({ x: 0, y: 0 })
-
+  const shapesRef = useRef([])
+  const trasnformerRef = useRef(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -52,8 +53,8 @@ function App() {
               selectedPage={selectedPage}
               canvasScale={canvasScale}
               stagePosRef={stagePosRef}
-              onCropSelected={(box, image) => {
-              }}
+              shapesRef={shapesRef}
+              trasnformerRef={trasnformerRef}
             />
           )}
         </div>
