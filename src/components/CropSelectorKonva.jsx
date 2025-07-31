@@ -94,7 +94,8 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
 
   const handleMouseMove = (e) => {
     const stage = stageRef.current;
-    pointer.current = stage.getPointerPosition();
+    pointer.current.x = stage.getPointerPosition().x;
+    pointer.current.y = stage.getPointerPosition().y;
   };
 
   const handleMouseUp = () => {

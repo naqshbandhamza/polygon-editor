@@ -22,8 +22,13 @@ function App() {
       setSelectedPage(null);
       canvasScale.current = { x: 1, y: 1 }
       stagePosRef.current = { x: 0, y: 0 }
-      shapesRef.current = []
-      trasnformerRef.current = null;
+      shapesRef.current.length = 0;
+      if (trasnformerRef?.current) {
+        console.log("destroying prev transforemer")
+        // trasnformerRef.current.destroy();
+        console.log(trasnformerRef.current)
+        trasnformerRef.current = null;
+      }
     }
   };
 
