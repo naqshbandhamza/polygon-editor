@@ -64,15 +64,10 @@ const Toolbar = ({ activateUltron }) => {
   );
 };
 
-export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScale, stagePosRef, shapesRef, trasnformerRef }) {
+export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScale, stagePosRef, shapesRef, trasnformerRef, pointer, drawlayerRef, stageRef }) {
 
   console.log("canvas page rendered")
   const [image, setImage] = useState(null);
-  const isDragging = useRef(false);
-
-  const pointer = useRef({ x: 0, y: 0 });
-  const drawlayerRef = useRef();
-  const stageRef = useRef();
 
   // Load fullCanvas into image
   useEffect(() => {
@@ -95,7 +90,6 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
 
 
   const handleMouseDown = (e) => {
-    isDragging.current = true;
   };
 
   const handleMouseMove = (e) => {
@@ -104,7 +98,6 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
   };
 
   const handleMouseUp = () => {
-    isDragging.current = true;
   };
 
   const handleWheel = (e) => {

@@ -10,6 +10,9 @@ function App() {
   const stagePosRef = useRef({ x: 0, y: 0 })
   const shapesRef = useRef([])
   const trasnformerRef = useRef(null);
+  const pointer = useRef({ x: 0, y: 0 });
+  const drawlayerRef = useRef();
+  const stageRef = useRef();
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -17,6 +20,10 @@ function App() {
       setPdfUrl(URL.createObjectURL(file));
       setPages([]);
       setSelectedPage(null);
+      canvasScale.current = { x: 1, y: 1 }
+      stagePosRef.current = { x: 0, y: 0 }
+      shapesRef.current = []
+      trasnformerRef.current = null;
     }
   };
 
@@ -55,6 +62,9 @@ function App() {
               stagePosRef={stagePosRef}
               shapesRef={shapesRef}
               trasnformerRef={trasnformerRef}
+              pointer={pointer}
+              drawlayerRef={drawlayerRef}
+              stageRef={stageRef}
             />
           )}
         </div>
