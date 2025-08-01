@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Image as KonvaImage, Rect } from "react-konva";
-import { Circle, Square, Triangle, Shapes, Type } from "lucide-react"; // You can replace with any icons you prefer
+import { Circle, Square, Triangle, Shapes, Type, Spline } from "lucide-react"; // You can replace with any icons you prefer
 
-const Toolbar = ({ activateUltron }) => {
+const Toolbar = ({ activateUltron, activeTool }) => {
 
   console.log("toolbar rendered")
   const [activeIcon, setActiveIcon] = useState(null);
@@ -11,6 +11,7 @@ const Toolbar = ({ activateUltron }) => {
   const icons = [
     { id: "shape", label: "Shapes", icon: Shapes },
     { id: "text", label: "Text", icon: Type },
+    { id: "spline", label: "Text", icon: Spline },
     // Add more tools here
   ];
 
@@ -24,7 +25,11 @@ const Toolbar = ({ activateUltron }) => {
           <button
             key={id}
             style={{ backgroundColor: activeIcon === id ? "#D8E7F7" : "white", outline: "none", padding: "10px" }}
-            onClick={() => setActiveIcon(activeIcon === id ? null : id)}
+            onClick={() => {
+              setActiveIcon(activeIcon === id ? null : id)
+              activeTool(activeIcon === id ? null : id)
+            }
+            }
           >
             <Icon className="text-black" size={24} />
           </button>
@@ -40,7 +45,6 @@ const Toolbar = ({ activateUltron }) => {
                 <button className="rounded text-black"
                   style={{ backgroundColor: "white", outline: "none", padding: "10px" }}
                   onMouseDown={() => {
-                    console.log("mouse down")
                     setActiveSubIcon(shape)
                     activateUltron(shape)
                   }}
@@ -64,10 +68,11 @@ const Toolbar = ({ activateUltron }) => {
   );
 };
 
-export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScale, stagePosRef, shapesRef, trasnformerRef, pointer, drawlayerRef, stageRef }) {
+export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScale, stagePosRef, shapesRef, trasnformerRef, pointer, drawlayerRef, stageRef, customShapesRef, customShapesRefIndx }) {
 
   console.log("canvas page rendered")
   const [image, setImage] = useState(null);
+  const activeToolRef = useRef(null);
 
   // Load fullCanvas into image
   useEffect(() => {
@@ -133,7 +138,6 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
   };
 
   const activateUltron = (shape) => {
-    console.log(shape)
     if (shape === "Rectangle") {
       const rect = new Konva.Rect({
         x: 100,
@@ -177,14 +181,96 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
       shapesRef.current.push(circle)
       drawlayerRef.current.add(circle)
     } else if (shape === "Triangle") {
+      const hexagon = new Konva.RegularPolygon({
+        x: 100,
+        y: 100,
+        sides: 3,
+        radius: 70,
+        fill: 'red',
+      });
 
+      hexagon.on("click", () => {
+        console.log("hexagon selected");
+        if (trasnformerRef?.current) {
+          if (trasnformerRef?.current) {
+            if (!trasnformerRef.current.nodes().includes(hexagon)) {
+              trasnformerRef.current.nodes([hexagon]);
+            } else
+              trasnformerRef.current.nodes([])
+          }
+        }
+      });
+      hexagon.draggable(true);
+      shapesRef.current.push(hexagon)
+      drawlayerRef.current.add(hexagon)
     }
+  }
+
+  const activeTool = (tool) => {
+    console.log(tool)
+    if (activeToolRef.current === "spline" && tool !== "spline") {
+      if (customShapesRef.current.length - 1 !== customShapesRefIndx.current) {
+
+      } else {
+        customShapesRefIndx.current += 1
+      }
+    }
+    activeToolRef.current = tool;
   }
 
   const handleStageDragEnd = () => {
     const pos = stageRef.current.position();
     stagePosRef.current = pos;
   };
+
+  const handleClickCanvas = () => {
+    if (activeToolRef?.current && activeToolRef.current === "spline") {
+      const pointer_t = stageRef.current.getPointerPosition();
+      const transform_t = stageRef.current.getAbsoluteTransform().copy().invert();
+      const point_t = transform_t.point(pointer_t);
+
+      if (customShapesRef.current.length - 1 !== customShapesRefIndx.current) {
+        customShapesRef.current.push([point_t])
+        const the_index = customShapesRefIndx.current;
+
+        const shape = new Konva.Shape({
+          sceneFunc: (context, shape) => {
+
+            context.beginPath();
+            for (let i = 0; i < customShapesRef.current[the_index].length; i++) {
+              context.lineTo(customShapesRef.current[the_index][i].x, customShapesRef.current[the_index][i].y);
+            }
+            context.closePath();
+            context.fillStrokeShape(shape);
+          },
+          fill: '#00D2FF',
+          stroke: 'black',
+          strokeWidth: 2,
+        });
+
+        // shape.on("click", () => {
+        //   console.log("custom shape selected");
+        //   if (trasnformerRef?.current) {
+        //     if (trasnformerRef?.current) {
+        //       if (!trasnformerRef.current.nodes().includes(shape)) {
+        //         trasnformerRef.current.nodes([shape]);
+        //       } else
+        //         trasnformerRef.current.nodes([])
+        //     }
+        //   }
+        // });
+        shape.draggable(true);
+        shapesRef.current.push(shape)
+        drawlayerRef.current.add(shape)
+        drawlayerRef.current.batchDraw(); // force re-render
+        console.log("first time shape added")
+      } else {
+        console.log("appen ding to shape")
+        customShapesRef.current[customShapesRefIndx.current].push(point_t)
+        drawlayerRef.current.batchDraw(); // force re-render
+      }
+    }
+  }
 
   const canvasWidth = fullCanvas?.width;
   const canvasHeight = fullCanvas?.height;
@@ -200,6 +286,7 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
           height={canvasHeight}
           scale={canvasScale.current}
           ref={stageRef}
+          onClick={handleClickCanvas}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -210,10 +297,11 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
           <Layer>
             {image && <KonvaImage image={image} />}
           </Layer>
-          <Layer ref={drawlayerRef} />
+          <Layer ref={drawlayerRef}>
+          </Layer>
         </Stage>
 
-        <Toolbar activateUltron={activateUltron} />
+        <Toolbar activateUltron={activateUltron} activeTool={activeTool} />
       </div>
     </div>
   );

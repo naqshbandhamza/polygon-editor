@@ -9,6 +9,8 @@ function App() {
   const canvasScale = useRef({ x: 1, y: 1 })
   const stagePosRef = useRef({ x: 0, y: 0 })
   const shapesRef = useRef([])
+  const customShapesRef = useRef([])
+  const customShapesRefIndx = useRef(0)
   const trasnformerRef = useRef(null);
   const pointer = useRef({ x: 0, y: 0 });
   const drawlayerRef = useRef();
@@ -23,6 +25,8 @@ function App() {
       canvasScale.current = { x: 1, y: 1 }
       stagePosRef.current = { x: 0, y: 0 }
       shapesRef.current.length = 0;
+      customShapesRef.current.length = 0;
+      customShapesRefIndx.current = 0;
       if (trasnformerRef?.current) {
         console.log("destroying prev transforemer")
         // trasnformerRef.current.destroy();
@@ -70,6 +74,8 @@ function App() {
               pointer={pointer}
               drawlayerRef={drawlayerRef}
               stageRef={stageRef}
+              customShapesRef={customShapesRef}
+              customShapesRefIndx={customShapesRefIndx}
             />
           )}
         </div>
