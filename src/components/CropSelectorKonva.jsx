@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Image as KonvaImage, Rect } from "react-konva";
-import { Circle, Square, Triangle, Shapes, Type, Spline } from "lucide-react"; // You can replace with any icons you prefer
+import { Stage, Layer, Image as KonvaImage, Rect, Circle, RegularPolygon, Transformer, Shape } from "react-konva";
+import { Circle as Circ, Square, Triangle, Shapes, Type, Spline } from "lucide-react"; // You can replace with any icons you prefer
 
 const Toolbar = ({ activateUltron, activeTool }) => {
 
@@ -53,7 +53,7 @@ const Toolbar = ({ activateUltron, activeTool }) => {
                     <Square />
                   )}
                   {shape === "Circle" && (
-                    <Circle />
+                    <Circ />
                   )}
                   {shape === "Triangle" && (
                     <Triangle />
@@ -68,11 +68,47 @@ const Toolbar = ({ activateUltron, activeTool }) => {
   );
 };
 
-export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScale, stagePosRef, shapesRef, trasnformerRef, pointer, drawlayerRef, stageRef, customShapesRef, customShapesRefIndx }) {
+export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
 
   console.log("canvas page rendered")
   const [image, setImage] = useState(null);
   const activeToolRef = useRef(null);
+  const [shapes, setShapes] = useState([]);
+  const [customShapes, setCustomShapes] = useState([]); // each item is an array of {x, y}
+
+  const selectedId = useRef(null);
+  const customShapesRefIndx = useRef(0)
+  const trasnformerRef = useRef(null);
+  const drawlayerRef = useRef();
+  const stageRef = useRef();
+  const canvasScale = useRef({ x: 1, y: 1 })
+  const stagePosRef = useRef({ x: 0, y: 0 })
+  const pointer = useRef({ x: 0, y: 0 });
+
+  const handleSelect = (shape) => {
+    if (trasnformerRef?.current) {
+      const selectedNode = drawlayerRef.current.findOne(`#${shape.id}`);
+
+      if (selectedNode) {
+        if (!trasnformerRef.current.nodes().includes(selectedNode)) {
+          trasnformerRef.current.nodes([selectedNode]);
+        } else
+          trasnformerRef.current.nodes([]);
+        drawlayerRef.current.batchDraw();
+      }
+    }
+    selectedId.current = shape.id;
+  };
+
+  const handleCustomSelect = (t_id) => {
+    const selectedNode = drawlayerRef.current.findOne(`#${t_id}`);
+    if (selectedNode) {
+      console.log("csuotm", selectedNode)
+    }
+    selectedId.current = t_id;
+  }
+
+
 
   // Load fullCanvas into image
   useEffect(() => {
@@ -82,12 +118,6 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
     if (stageRef?.current) {
       stageRef.current.draggable(true);
       stageRef.current.position(stagePosRef.current)
-      const layer = drawlayerRef.current;
-      if (!trasnformerRef?.current) {
-        const transformer = new Konva.Transformer();
-        trasnformerRef.current = transformer;
-      }
-      layer.add(trasnformerRef.current);
       stageRef.current.batchDraw();
     }
   }, [fullCanvas]);
@@ -138,76 +168,57 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
 
   const activateUltron = (shape) => {
     if (shape === "Rectangle") {
-      const rect = new Konva.Rect({
+
+      const shape = {
+        id: `${shapes.length + 1}`,
+        type: 'rect',
         x: 100,
         y: 100,
         width: 100,
         height: 100,
         fill: 'red',
-      });
-      rect.on("click", () => {
-        console.log("rect selected");
-        if (trasnformerRef?.current) {
-          if (!trasnformerRef.current.nodes().includes(rect)) {
-            trasnformerRef.current.nodes([rect]);
-          } else
-            trasnformerRef.current.nodes([])
-        }
-      });
-      rect.draggable(true);
-      shapesRef.current.push(rect)
-      drawlayerRef.current.add(rect)
+      };
+
+
+      setShapes(prev => [...prev, shape])
 
     } else if (shape === "Circle") {
-      const circle = new Konva.Circle({
-        x: 100,
-        y: 100,
+
+      const shape = {
+        id: `${shapes.length + 1}`,
+        type: 'circle',
+        x: 250,
+        y: 150,
         radius: 50,
-        fill: 'blue',
-      });
-      circle.on("click", () => {
-        console.log("Circle selected");
-        if (trasnformerRef?.current) {
-          if (trasnformerRef?.current) {
-            if (!trasnformerRef.current.nodes().includes(circle)) {
-              trasnformerRef.current.nodes([circle]);
-            } else
-              trasnformerRef.current.nodes([])
-          }
-        }
-      });
-      circle.draggable(true);
-      shapesRef.current.push(circle)
-      drawlayerRef.current.add(circle)
+        fill: 'green',
+      }
+
+
+      setShapes(prev => [...prev, shape])
+
+
     } else if (shape === "Triangle") {
-      const hexagon = new Konva.RegularPolygon({
-        x: 100,
+
+      const shape = {
+        id: `${shapes.length + 1}`,
+        type: 'hexagon', // 3-sided polygon (triangle)
+        x: 400,
         y: 100,
         sides: 3,
-        radius: 70,
-        fill: 'red',
-      });
+        radius: 60,
+        fill: 'blue',
+      };
 
-      hexagon.on("click", () => {
-        console.log("hexagon selected");
-        if (trasnformerRef?.current) {
-          if (trasnformerRef?.current) {
-            if (!trasnformerRef.current.nodes().includes(hexagon)) {
-              trasnformerRef.current.nodes([hexagon]);
-            } else
-              trasnformerRef.current.nodes([])
-          }
-        }
-      });
-      hexagon.draggable(true);
-      shapesRef.current.push(hexagon)
-      drawlayerRef.current.add(hexagon)
+
+      setShapes(prev => [...prev, shape])
+
     }
   }
 
   const activeTool = (tool) => {
     if (activeToolRef.current === "spline" && tool !== "spline") {
-      if (customShapesRef.current.length - 1 !== customShapesRefIndx.current) {
+      if (customShapes.length - 1 !== customShapesRefIndx.current) {
+        //pass
       } else {
         customShapesRefIndx.current += 1
       }
@@ -226,45 +237,16 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
       const transform_t = stageRef.current.getAbsoluteTransform().copy().invert();
       const point_t = transform_t.point(pointer_t);
 
-      if (customShapesRef.current.length - 1 !== customShapesRefIndx.current) {
+      setCustomShapes((prevShapes) => {
+        const updated = [...prevShapes];
+        if (updated.length - 1 !== customShapesRefIndx.current) {
+          updated.push([point_t])
+        } else {
+          updated[customShapesRefIndx.current].push(point_t)
+        }
+        return updated;
+      });
 
-        customShapesRef.current.push([point_t])
-        const the_index = customShapesRefIndx.current;
-
-        const shape = new Konva.Shape({
-          sceneFunc: (context, shape) => {
-            context.beginPath();
-            for (let i = 0; i < customShapesRef.current[the_index].length; i++) {
-              context.lineTo(customShapesRef.current[the_index][i].x, customShapesRef.current[the_index][i].y);
-            }
-            context.closePath();
-            context.fillStrokeShape(shape);
-          },
-          fill: '#00D2FF',
-          stroke: 'black',
-          strokeWidth: 2,
-        });
-
-        // shape.on("click", () => {
-        //   console.log("custom shape selected");
-        //   if (trasnformerRef?.current) {
-        //     if (trasnformerRef?.current) {
-        //       if (!trasnformerRef.current.nodes().includes(shape)) {
-        //         trasnformerRef.current.nodes([shape]);
-        //       } else
-        //         trasnformerRef.current.nodes([])
-        //     }
-        //   }
-        // });
-
-        shape.draggable(true);
-        shapesRef.current.push(shape)
-        drawlayerRef.current.add(shape)
-        drawlayerRef.current.batchDraw();
-      } else {
-        customShapesRef.current[customShapesRefIndx.current].push(point_t)
-        drawlayerRef.current.batchDraw();
-      }
     }
   }
 
@@ -294,6 +276,69 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
             {image && <KonvaImage image={image} />}
           </Layer>
           <Layer ref={drawlayerRef}>
+            {shapes.map((shape) => {
+
+              const { type, ...rest } = shape;
+
+              if (type === 'rect') {
+                return (
+                  <Rect
+                    key={shape.id}
+                    id={`${shape.id}`}
+                    {...rest}
+                    draggable
+                    onClick={() => handleSelect(shape)}
+                  />
+                );
+              } else if (type === 'circle') {
+                return (
+                  <Circle
+                    key={shape.id}
+                    id={`${shape.id}`}
+                    {...rest}
+                    draggable
+                    onClick={() => handleSelect(shape)}
+                  />
+                );
+              } else if (type === 'hexagon') {
+                return (
+                  <RegularPolygon
+                    key={shape.id}
+                    id={`${shape.id}`}
+                    {...rest}
+                    draggable
+                    onClick={() => handleSelect(shape)}
+                  />
+                );
+              } else {
+                return null;
+              }
+            })}
+
+            {customShapes.map((points, index) => (
+              <Shape
+                key={index}
+                id={`custom-${index}`}
+                onClick={() => handleCustomSelect(`custom-${index}`)}
+                sceneFunc={(ctx, shape) => {
+                  ctx.beginPath();
+                  if (points.length > 0) {
+                    points.forEach((pt) => ctx.lineTo(pt.x, pt.y));
+                  }
+                  ctx.closePath();
+                  ctx.fillStrokeShape(shape);
+                }}
+                fill="#00D2FF"
+                stroke="black"
+                strokeWidth={2}
+                draggable
+              />
+            ))}
+
+            <Transformer
+              ref={trasnformerRef}
+              nodes={[]}
+            />
           </Layer>
         </Stage>
 
