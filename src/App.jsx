@@ -6,15 +6,6 @@ function App() {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pages, setPages] = useState([]); // all page canvases
   const [selectedPage, setSelectedPage] = useState(null);
-  const canvasScale = useRef({ x: 1, y: 1 })
-  const stagePosRef = useRef({ x: 0, y: 0 })
-  const shapesRef = useRef([])
-  const customShapesRef = useRef([])
-  const customShapesRefIndx = useRef(0)
-  const trasnformerRef = useRef(null);
-  const pointer = useRef({ x: 0, y: 0 });
-  const drawlayerRef = useRef();
-  const stageRef = useRef();
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -22,17 +13,6 @@ function App() {
       setPdfUrl(URL.createObjectURL(file));
       setPages([]);
       setSelectedPage(null);
-      canvasScale.current = { x: 1, y: 1 }
-      stagePosRef.current = { x: 0, y: 0 }
-      shapesRef.current.length = 0;
-      customShapesRef.current.length = 0;
-      customShapesRefIndx.current = 0;
-      if (trasnformerRef?.current) {
-        console.log("destroying prev transforemer")
-        // trasnformerRef.current.destroy();
-        console.log(trasnformerRef.current)
-        trasnformerRef.current = null;
-      }
     }
   };
 
@@ -67,15 +47,6 @@ function App() {
             <CropSelectorKonva
               fullCanvas={selectedPage.canvas}
               selectedPage={selectedPage}
-              canvasScale={canvasScale}
-              stagePosRef={stagePosRef}
-              shapesRef={shapesRef}
-              trasnformerRef={trasnformerRef}
-              pointer={pointer}
-              drawlayerRef={drawlayerRef}
-              stageRef={stageRef}
-              customShapesRef={customShapesRef}
-              customShapesRefIndx={customShapesRefIndx}
             />
           )}
         </div>

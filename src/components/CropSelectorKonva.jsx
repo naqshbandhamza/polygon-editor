@@ -68,11 +68,21 @@ const Toolbar = ({ activateUltron, activeTool }) => {
   );
 };
 
-export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScale, stagePosRef, shapesRef, trasnformerRef, pointer, drawlayerRef, stageRef, customShapesRef, customShapesRefIndx }) {
+export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
 
   console.log("canvas page rendered")
   const [image, setImage] = useState(null);
   const activeToolRef = useRef(null);
+  const trasnformerRef = useRef(null);
+
+  const pointer = useRef({ x: 0, y: 0 });
+  const stageRef = useRef();
+  const drawlayerRef = useRef();
+  const canvasScale = useRef({ x: 1, y: 1 })
+  const stagePosRef = useRef({ x: 0, y: 0 })
+  const shapesRef = useRef([])
+  const customShapesRef = useRef([])
+  const customShapesRefIndx = useRef(0)
 
   // Load fullCanvas into image
   useEffect(() => {
@@ -84,11 +94,12 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
       stageRef.current.position(stagePosRef.current)
       const layer = drawlayerRef.current;
       if (!trasnformerRef?.current) {
+        console.log("new trans")
         const transformer = new Konva.Transformer();
         trasnformerRef.current = transformer;
+        layer.add(trasnformerRef.current);
+        stageRef.current.batchDraw();
       }
-      layer.add(trasnformerRef.current);
-      stageRef.current.batchDraw();
     }
   }, [fullCanvas]);
 
