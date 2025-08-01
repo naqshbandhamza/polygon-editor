@@ -84,7 +84,6 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
       stageRef.current.position(stagePosRef.current)
       const layer = drawlayerRef.current;
       if (!trasnformerRef?.current) {
-        console.log("init transforemer")
         const transformer = new Konva.Transformer();
         trasnformerRef.current = transformer;
       }
@@ -207,10 +206,8 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
   }
 
   const activeTool = (tool) => {
-    console.log(tool)
     if (activeToolRef.current === "spline" && tool !== "spline") {
       if (customShapesRef.current.length - 1 !== customShapesRefIndx.current) {
-
       } else {
         customShapesRefIndx.current += 1
       }
@@ -230,12 +227,12 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
       const point_t = transform_t.point(pointer_t);
 
       if (customShapesRef.current.length - 1 !== customShapesRefIndx.current) {
+
         customShapesRef.current.push([point_t])
         const the_index = customShapesRefIndx.current;
 
         const shape = new Konva.Shape({
           sceneFunc: (context, shape) => {
-
             context.beginPath();
             for (let i = 0; i < customShapesRef.current[the_index].length; i++) {
               context.lineTo(customShapesRef.current[the_index][i].x, customShapesRef.current[the_index][i].y);
@@ -259,15 +256,14 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage, canvasScal
         //     }
         //   }
         // });
+
         shape.draggable(true);
         shapesRef.current.push(shape)
         drawlayerRef.current.add(shape)
-        drawlayerRef.current.batchDraw(); // force re-render
-        console.log("first time shape added")
+        drawlayerRef.current.batchDraw();
       } else {
-        console.log("appen ding to shape")
         customShapesRef.current[customShapesRefIndx.current].push(point_t)
-        drawlayerRef.current.batchDraw(); // force re-render
+        drawlayerRef.current.batchDraw();
       }
     }
   }
