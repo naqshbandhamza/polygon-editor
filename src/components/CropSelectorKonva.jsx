@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Image as KonvaImage, Rect, Circle, RegularPolygon, Transformer, Shape } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Rect, Circle, RegularPolygon, Transformer, Shape, Line } from "react-konva";
 import { Circle as Circ, Square, Triangle, Shapes, Type, Spline } from "lucide-react"; // You can replace with any icons you prefer
 
 const Toolbar = ({ activateUltron, activeTool }) => {
@@ -84,6 +84,8 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
   const canvasScale = useRef({ x: 1, y: 1 })
   const stagePosRef = useRef({ x: 0, y: 0 })
   const pointer = useRef({ x: 0, y: 0 });
+  const temporary_draw_line_ref = useRef([])
+  const redLineRef = useRef(null);
 
   const handleSelect = (shape) => {
     if (trasnformerRef?.current) {
@@ -119,6 +121,25 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
       stageRef.current.draggable(true);
       stageRef.current.position(stagePosRef.current)
       stageRef.current.batchDraw();
+
+      const redLine = new Konva.Shape({
+        sceneFunc: (context, shape) => {
+          if (temporary_draw_line_ref.current.length !== 4)
+            return;
+          context.beginPath();
+
+          context.lineTo(temporary_draw_line_ref.current[0], temporary_draw_line_ref.current[1]);
+          context.lineTo(temporary_draw_line_ref.current[2], temporary_draw_line_ref.current[3]);
+          context.closePath();
+          context.fillStrokeShape(shape);
+        },
+        fill: '#00D2FF',
+        stroke: 'red',
+        strokeWidth: 2,
+      });
+      drawlayerRef.current.add(redLine);
+      redLine.moveToTop();
+      drawlayerRef.current.draw();
     }
   }, [fullCanvas]);
 
@@ -127,9 +148,22 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
   };
 
   const handleMouseMove = (e) => {
-    const stage = stageRef.current;
-    pointer.current.x = stage.getPointerPosition().x;
-    pointer.current.y = stage.getPointerPosition().y;
+
+    const tempttt = stageRef.current.getPointerPosition();
+    pointer.current.x = tempttt.x;
+    pointer.current.y = tempttt.y;
+
+    const transform = stageRef.current.getAbsoluteTransform().copy().invert();
+    const localPoint = transform.point(tempttt);
+
+    if (activeToolRef?.current && activeToolRef.current === "spline" && customShapes.length > 0) {
+      if (customShapes.length - 1 === customShapesRefIndx.current) {
+        const thet = customShapes[customShapes.length - 1];
+        temporary_draw_line_ref.current = [thet[thet.length - 1].x, thet[thet.length - 1].y, localPoint.x, localPoint.y]
+        drawlayerRef.current.batchDraw();
+      }
+    }
+
   };
 
   const handleMouseUp = () => {
@@ -220,7 +254,9 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
       if (customShapes.length - 1 !== customShapesRefIndx.current) {
         //pass
       } else {
+        temporary_draw_line_ref.current = [];
         customShapesRefIndx.current += 1
+        drawlayerRef.current.batchDraw();
       }
     }
     activeToolRef.current = tool;
