@@ -84,7 +84,6 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
   const customShapesRef = useRef([])
   const customShapesRefIndx = useRef(0)
   const temporary_draw_line_ref = useRef([])
-  const redLineRef = useRef(null);
 
   // Load fullCanvas into image
   useEffect(() => {
@@ -100,6 +99,7 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
         const transformer = new Konva.Transformer();
         trasnformerRef.current = transformer;
         layer.add(trasnformerRef.current);
+        transformer.moveToTop();
         stageRef.current.batchDraw();
       }
       const redLine = new Konva.Shape({
@@ -179,6 +179,15 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
     stage.batchDraw();
   };
 
+  const handle_shape_click = (shape) => {
+    if (trasnformerRef?.current) {
+      if (!trasnformerRef.current.nodes().includes(shape)) {
+        trasnformerRef.current.nodes([shape]);
+      } else
+        trasnformerRef.current.nodes([])
+    }
+  }
+
   const activateUltron = (shape) => {
     if (shape === "Rectangle") {
       const rect = new Konva.Rect({
@@ -189,13 +198,7 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
         fill: 'red',
       });
       rect.on("click", () => {
-        console.log("rect selected");
-        if (trasnformerRef?.current) {
-          if (!trasnformerRef.current.nodes().includes(rect)) {
-            trasnformerRef.current.nodes([rect]);
-          } else
-            trasnformerRef.current.nodes([])
-        }
+        handle_shape_click(rect);
       });
       rect.draggable(true);
       shapesRef.current.push(rect)
@@ -209,15 +212,7 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
         fill: 'blue',
       });
       circle.on("click", () => {
-        console.log("Circle selected");
-        if (trasnformerRef?.current) {
-          if (trasnformerRef?.current) {
-            if (!trasnformerRef.current.nodes().includes(circle)) {
-              trasnformerRef.current.nodes([circle]);
-            } else
-              trasnformerRef.current.nodes([])
-          }
-        }
+        handle_shape_click(circle);
       });
       circle.draggable(true);
       shapesRef.current.push(circle)
@@ -232,15 +227,7 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
       });
 
       hexagon.on("click", () => {
-        console.log("hexagon selected");
-        if (trasnformerRef?.current) {
-          if (trasnformerRef?.current) {
-            if (!trasnformerRef.current.nodes().includes(hexagon)) {
-              trasnformerRef.current.nodes([hexagon]);
-            } else
-              trasnformerRef.current.nodes([])
-          }
-        }
+        handle_shape_click(hexagon);
       });
       hexagon.draggable(true);
       shapesRef.current.push(hexagon)
@@ -290,17 +277,9 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
           strokeWidth: 2,
         });
 
-        // shape.on("click", () => {
-        //   console.log("custom shape selected");
-        //   if (trasnformerRef?.current) {
-        //     if (trasnformerRef?.current) {
-        //       if (!trasnformerRef.current.nodes().includes(shape)) {
-        //         trasnformerRef.current.nodes([shape]);
-        //       } else
-        //         trasnformerRef.current.nodes([])
-        //     }
-        //   }
-        // });
+        shape.on("click", () => {
+
+        });
 
         shape.draggable(true);
         shapesRef.current.push(shape)
