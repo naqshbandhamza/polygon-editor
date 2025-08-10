@@ -10,7 +10,7 @@ const Toolbar = ({ activateUltron, activeTool }) => {
 
   const icons = [
     { id: "shape", label: "Shapes", icon: Shapes },
-    { id: "text", label: "Text", icon: Type },
+    // { id: "text", label: "Text", icon: Type },
     { id: "spline", label: "Text", icon: Spline },
     // Add more tools here
   ];
@@ -84,6 +84,9 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
   const customShapesRef = useRef([])
   const customShapesRefIndx = useRef(0)
   const temporary_draw_line_ref = useRef([])
+
+  const containerRef = useRef();
+
 
   // Load fullCanvas into image
   useEffect(() => {
@@ -292,37 +295,35 @@ export default function CropSelectorKonva({ fullCanvas, selectedPage }) {
     }
   }
 
-  const canvasWidth = fullCanvas?.width;
+  // const canvasWidth = fullCanvas?.width;
+  const canvasWidth = window.innerWidth;
   const canvasHeight = fullCanvas?.height;
 
   return (
     <div className="relative border overflow-hidden w-[100%] h-[100%]"
+      ref={containerRef}
     >
-      <div
-        style={{ width: "100%", height: "100%" }}
+      <Stage
+        width={canvasWidth}
+        height={canvasHeight}
+        scale={canvasScale.current}
+        ref={stageRef}
+        onClick={handleClickCanvas}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onWheel={handleWheel}
+        onDragEnd={handleStageDragEnd}
+        style={{ background: "#fff" }}
       >
-        <Stage
-          width={canvasWidth}
-          height={canvasHeight}
-          scale={canvasScale.current}
-          ref={stageRef}
-          onClick={handleClickCanvas}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onWheel={handleWheel}
-          onDragEnd={handleStageDragEnd}
-          style={{ background: "#fff" }}
-        >
-          <Layer>
-            {image && <KonvaImage image={image} />}
-          </Layer>
-          <Layer ref={drawlayerRef}>
-          </Layer>
-        </Stage>
+        <Layer>
+          {image && <KonvaImage image={image} />}
+        </Layer>
+        <Layer ref={drawlayerRef}>
+        </Layer>
+      </Stage>
 
-        <Toolbar activateUltron={activateUltron} activeTool={activeTool} />
-      </div>
+      <Toolbar activateUltron={activateUltron} activeTool={activeTool} />
     </div>
   );
 }

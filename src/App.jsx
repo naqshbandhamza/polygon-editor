@@ -22,10 +22,21 @@ function App() {
   }, [pages])
 
   return (
-    <div className="bg-[#F2F2F2] w-[100vw] h-[100%]">
-      <div className="w-[100%] p-4 color-black">
-        <input className="color-black" type="file" accept="application/pdf" onChange={handleFileChange} />
-      </div>
+    <div className="bg-[#002A54] w-[100vw] h-[100%]">
+      <div className="w-[100%] h-[100%] p-4 color-black flex justify-center">
+        <label
+          htmlFor="pdf-upload"
+          className="inline-block px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md cursor-pointer hover:bg-indigo-700"
+        >
+          📄 Upload PDF
+        </label>
+        <input
+          id="pdf-upload"
+          type="file"
+          accept="application/pdf"
+          className="hidden"
+          onChange={handleFileChange}
+        />      </div>
       {pdfUrl && (
         <PdfLoader
           pdfUrl={pdfUrl}
